@@ -3,5 +3,5 @@
     <string name="start">START</string>
     <string name="stop">STOP</string>
     <string name="reset">RESET</string>
-    <string name="init_step">0 Step</string>
+    <string name="step">STEPS</string>
 </resources>

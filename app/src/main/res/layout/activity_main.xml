@@ -6,6 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <fragment
+        class="com.google.android.gms.maps.SupportMapFragment"
+        android:id="@+id/mapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="285dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints,SpeakableTextPresentCheck" />
+
     <TextView
         android:id="@+id/textStep"
         android:layout_width="113dp"
@@ -17,7 +28,7 @@
         app:layout_constraintHorizontal_bias="0.687"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapView" />
+        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
     <TextView
         android:id="@+id/textNumberStep"
@@ -29,17 +40,7 @@
         android:textSize="34sp"
         app:layout_constraintEnd_toStartOf="@+id/textStep"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapView" />
-
-    <com.google.android.gms.maps.MapView
-        android:id="@+id/mapView"
-        android:layout_width="423dp"
-        android:layout_height="285dp"
-        android:layout_marginTop="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="MissingConstraints,SpeakableTextPresentCheck" />
+        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonStart"
@@ -51,7 +52,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapView" />
+        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonReset"
@@ -61,7 +62,7 @@
         android:text="@string/reset"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapView" />
+        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

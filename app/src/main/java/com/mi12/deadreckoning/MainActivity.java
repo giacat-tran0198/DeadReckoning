@@ -15,8 +15,13 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -24,7 +29,7 @@ import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener, OnMapReadyCallback {
 
     final double DELTA = 6;
 
@@ -38,6 +43,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     double magnitudePrevious = 0;
     int stepCount = 0;
+
+    boolean isPermissionLocationGranted;
+    SupportMapFragment mapFragment;
 
 
     @Override
@@ -53,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonStart = findViewById(R.id.buttonStart);
         buttonReset = findViewById(R.id.buttonReset);
         textNumberStep = findViewById(R.id.textNumberStep);
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         if (sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER) != null) {
@@ -63,6 +72,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Sensor Accelerometer not found", Toast.LENGTH_SHORT).show();
         }
 
+        // show map
+        if (isPermissionLocationGranted){
+            mapFragment.getMapAsync(this);
+        }
     }
 
     private void checkMyPermission() {
@@ -72,7 +85,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .withListener(new PermissionListener() {
                     @Override
                     public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
-                        Toast.makeText(MainActivity.this, "Permission Granted", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "Permission Location Granted", Toast.LENGTH_SHORT).show();
+                        isPermissionLocationGranted = true;
                     }
 
                     @Override
@@ -153,5 +167,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (sensor != null){
             sensorManager.unregisterListener(this, sensor);
         }
+    }
+
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+
     }
 }

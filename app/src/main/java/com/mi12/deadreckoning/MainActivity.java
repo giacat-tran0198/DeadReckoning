@@ -1,10 +1,14 @@
 package com.mi12.deadreckoning;
 
+import android.Manifest;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -12,6 +16,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionDeniedResponse;
+import com.karumi.dexter.listener.PermissionGrantedResponse;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.single.PermissionListener;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener {
 
@@ -26,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     boolean isAccelerometerAvailable = false;
 
     double magnitudePrevious = 0;
-    Integer stepCount = 0;
+    int stepCount = 0;
 
 
     @Override
@@ -35,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        checkMyPermission();
 
         // Find item
         buttonStart = findViewById(R.id.buttonStart);
@@ -50,6 +63,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Toast.makeText(this, "Sensor Accelerometer not found", Toast.LENGTH_SHORT).show();
         }
 
+    }
+
+    private void checkMyPermission() {
+        Dexter
+                .withContext(this)
+                .withPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+                .withListener(new PermissionListener() {
+                    @Override
+                    public void onPermissionGranted(PermissionGrantedResponse permissionGrantedResponse) {
+                        Toast.makeText(MainActivity.this, "Permission Granted", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onPermissionDenied(PermissionDeniedResponse permissionDeniedResponse) {
+                        Intent intent = new Intent();
+                        intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        Uri uri = Uri.fromParts("package", getPackageName(), "");
+                        intent.setData(uri);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(PermissionRequest permissionRequest, PermissionToken permissionToken) {
+                        permissionToken.continuePermissionRequest();
+                    }
+                })
+                .check();
     }
 
     private void onChangeTextButtonStart() {
@@ -68,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             stepCount = 0;
             magnitudePrevious = 0;
-            textNumberStep.setText(stepCount);
+            textNumberStep.setText(String.valueOf(stepCount));
         }
     }
 
@@ -85,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             if (magnitudeDelta > DELTA) {
                 stepCount++;
-                textNumberStep.setText(stepCount);
+                textNumberStep.setText(String.valueOf(stepCount));
             }
         }
     }

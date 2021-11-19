@@ -24,9 +24,13 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
@@ -85,6 +89,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         // show map
+//        Uri gmmIntentUri = Uri.parse("geo:49.40031263306482, 2.8002218997795527");
+//        Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
+//        mapIntent.setPackage("com.google.android.apps.maps");
+//        startActivity(mapIntent);
+
+
         if (isPermissionLocationGranted) {
             mapFragment.getMapAsync(this);
         }
@@ -204,6 +214,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Set event
         buttonStart.setOnClickListener(this);
         buttonReset.setOnClickListener(this);
+        buttonRemind.setOnClickListener(this);
     }
 
     @Override
@@ -216,6 +227,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-
+        LatLng pg = new LatLng(49.40019786621855, 2.800168926152195);
+        googleMap.addMarker(new MarkerOptions().position(pg).title("Départ").snippet("Départ"));
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(pg).zoom(20).build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 }

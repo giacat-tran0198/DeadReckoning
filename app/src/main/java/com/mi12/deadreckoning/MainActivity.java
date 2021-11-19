@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Find item
         buttonStart = findViewById(R.id.buttonStart);
         buttonReset = findViewById(R.id.buttonReset);
+        buttonRemind = findViewById(R.id.buttonRemind);
+
         textNumberStep = findViewById(R.id.textNumberStep);
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
 
@@ -91,8 +93,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Get the application context
         mContext = getApplicationContext();
-
-        buttonRemind = findViewById(R.id.buttonRemind);
     }
 
 
@@ -204,6 +204,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Set event
         buttonStart.setOnClickListener(this);
         buttonReset.setOnClickListener(this);
+        buttonRemind.setOnClickListener(this);
     }
 
     @Override

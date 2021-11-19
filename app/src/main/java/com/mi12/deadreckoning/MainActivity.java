@@ -1,7 +1,6 @@
 package com.mi12.deadreckoning;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.hardware.Sensor;
@@ -31,12 +30,16 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.PermissionToken;
 import com.karumi.dexter.listener.PermissionDeniedResponse;
 import com.karumi.dexter.listener.PermissionGrantedResponse;
 import com.karumi.dexter.listener.PermissionRequest;
 import com.karumi.dexter.listener.single.PermissionListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener, OnMapReadyCallback {
 
@@ -57,11 +60,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     boolean isPermissionLocationGranted;
     SupportMapFragment mapFragment;
-
+    GoogleMap googleMap;
+    PolylineOptions poly = new PolylineOptions();
+    LatLng defaultDepart = new LatLng(49.40019786621855, 2.800168926152195);
 
     Context mContext;
 
     PopupWindow mPopupWindow;
+
+    List<LatLng> listStep = new ArrayList<>();
 
 
     @Override
@@ -138,6 +145,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonStart.setText(getString(buttonStart.isSelected() ? R.string.stop : R.string.start));
     }
 
+    private void resetListStep() {
+        listStep = new ArrayList<>();
+    }
+
+    private void drawPolyline(LatLng latLng) {
+        poly.add(latLng);
+        googleMap.addPolyline(poly);
+    }
+
     @Override
     public void onClick(View v) {
         int id = v.getId();
@@ -151,6 +167,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             stepCount = 0;
             magnitudePrevious = 0;
             textNumberStep.setText(String.valueOf(stepCount));
+
+            resetListStep();
+
         } else if (id == R.id.buttonRemind) {
             // Initialize a new instance of LayoutInflater service
             LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(LAYOUT_INFLATER_SERVICE);
@@ -195,6 +214,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (magnitudeDelta > DELTA) {
                 stepCount++;
                 textNumberStep.setText(String.valueOf(stepCount));
+
+                // draw line - after calcul new latlng
+                // drawPolyline(new LatLng(...));
             }
         }
     }
@@ -227,9 +249,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        LatLng pg = new LatLng(49.40019786621855, 2.800168926152195);
-        googleMap.addMarker(new MarkerOptions().position(pg).title("Départ").snippet("Départ"));
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(pg).zoom(20).build();
+        this.googleMap = googleMap;
+
+        googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default").snippet("Default"));
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+        poly.add(defaultDepart);
+
+        googleMap.addPolyline(poly);
+
     }
+
 }

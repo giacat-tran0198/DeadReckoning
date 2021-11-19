@@ -9,7 +9,6 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Gravity;
@@ -41,6 +40,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     Button buttonStart;
     Button buttonReset;
+    Button buttonRemind;
+
     TextView textNumberStep;
 
     SensorManager sensorManager;
@@ -54,13 +55,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     SupportMapFragment mapFragment;
 
 
-    private Context mContext;
-    private Activity mActivity;
-    private Button mButton;
+    Context mContext;
 
-    private PopupWindow mPopupWindow;
-
-
+    PopupWindow mPopupWindow;
 
 
     @Override
@@ -88,56 +85,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         // show map
-        if (isPermissionLocationGranted){
+        if (isPermissionLocationGranted) {
             mapFragment.getMapAsync(this);
         }
 
         // Get the application context
         mContext = getApplicationContext();
-        // Get the activity
-        mActivity = MainActivity.this;
 
-        mButton = (Button) findViewById(R.id.btn);
-
-        // Set a click listener for the text view
-        mButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // Initialize a new instance of LayoutInflater service
-                LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(LAYOUT_INFLATER_SERVICE);
-
-                // Inflate the custom layout/view
-                View customView = inflater.inflate(R.layout.popup,null);
-
-                // Initialize a new instance of popup window
-                mPopupWindow = new PopupWindow(
-                        customView,
-                        WindowManager.LayoutParams.WRAP_CONTENT,
-                        WindowManager.LayoutParams.WRAP_CONTENT
-                );
-
-                // Set an elevation value for popup window
-                // Call requires API level 21
-                if(Build.VERSION.SDK_INT>=21){
-                    mPopupWindow.setElevation(5.0f);
-                }
-
-                // Get a reference for the custom view close button
-                ImageButton closeButton = (ImageButton) customView.findViewById(R.id.ib_close);
-
-                // Set a click listener for the popup window close button
-                closeButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        // Dismiss the popup window
-                        mPopupWindow.dismiss();
-                    }
-                });
-
-                // Finally, show the popup window at the center location of root relative layout
-                mPopupWindow.showAtLocation(view, Gravity.CENTER,0,0);
-            }
-        });
+        buttonRemind = findViewById(R.id.buttonRemind);
     }
 
 
@@ -186,6 +141,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             stepCount = 0;
             magnitudePrevious = 0;
             textNumberStep.setText(String.valueOf(stepCount));
+        } else if (id == R.id.buttonRemind) {
+            // Initialize a new instance of LayoutInflater service
+            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(LAYOUT_INFLATER_SERVICE);
+
+            // Inflate the custom layout/view
+            View customView = inflater.inflate(R.layout.popup, null);
+
+            // Initialize a new instance of popup window
+            mPopupWindow = new PopupWindow(
+                    customView,
+                    WindowManager.LayoutParams.WRAP_CONTENT,
+                    WindowManager.LayoutParams.WRAP_CONTENT
+            );
+
+            // Set an elevation value for popup window
+            // Call requires API level 21
+            mPopupWindow.setElevation(5.0f);
+
+            // Get a reference for the custom view close button
+            ImageButton closeButton = customView.findViewById(R.id.ib_close);
+
+            // Set a click listener for the popup window close button
+            // Dismiss the popup window
+            closeButton.setOnClickListener(view -> mPopupWindow.dismiss());
+
+            // Finally, show the popup window at the center location of root relative layout
+            mPopupWindow.showAtLocation(v, Gravity.CENTER, 0, 0);
         }
     }
 
@@ -215,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
 
-        if (sensor != null){
+        if (sensor != null) {
             sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
@@ -227,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
-        if (sensor != null){
+        if (sensor != null) {
             sensorManager.unregisterListener(this, sensor);
         }
     }

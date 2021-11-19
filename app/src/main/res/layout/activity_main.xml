@@ -46,11 +46,10 @@
         android:id="@+id/buttonStart"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginTop="120dp"
-        android:text="@string/start"
+        android:layout_marginTop="96dp"
         android:backgroundTint="@color/button_start_background_color"
+        android:text="@string/start"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
@@ -58,17 +57,20 @@
         android:id="@+id/buttonReset"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginTop="212dp"
+        android:layout_marginTop="180dp"
         android:text="@string/reset"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
-    <Button
-        android:id="@+id/btn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Rappel des consignes"
-        tools:ignore="MissingConstraints" />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/buttonRemind"
+        android:layout_width="225dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="264dp"
+        android:text="@string/remind"
+        app:layout_constraintTop_toBottomOf="@+id/mapFragment"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="92dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,6 +7,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -57,16 +58,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     double magnitudePrevious = 0;
     int stepCount = 0;
+    float stepSize = 0.8f;
 
     boolean isPermissionLocationGranted;
     SupportMapFragment mapFragment;
     GoogleMap googleMap;
     PolylineOptions poly = new PolylineOptions();
     LatLng defaultDepart = new LatLng(49.40019786621855, 2.800168926152195);
+    Location currentLocation = new Location("Current Location");
+
 
     Context mContext;
 
     PopupWindow mPopupWindow;
+
+    StepPositioningHandler sph;
+    DeviceAttitudeHandler dah;
 
     List<LatLng> listStep = new ArrayList<>();
 
@@ -149,8 +156,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         listStep = new ArrayList<>();
     }
 
-    private void drawPolyline(LatLng latLng) {
-        poly.add(latLng);
+    private void drawPolyline(Location location) {
+        LatLng newLoc = new LatLng(location.getLongitude(), location.getLatitude());
+        poly.add(newLoc);
         googleMap.addPolyline(poly);
     }
 
@@ -215,8 +223,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 stepCount++;
                 textNumberStep.setText(String.valueOf(stepCount));
 
-                // draw line - after calcul new latlng
-                // drawPolyline(new LatLng(...));
+                // Get new location and add the line on the map
+                Location newLocation = sph.computeNextStep(stepSize, dah.orientationVals[0]);
+                LatLng latlng = new LatLng (newLocation.getLongitude(),newLocation.getLatitude());
+                CameraPosition cameraPosition = new CameraPosition.Builder().target(latlng).zoom(20).build();
+                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+                drawPolyline(newLocation);
+
             }
         }
     }
@@ -251,6 +264,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onMapReady(@NonNull GoogleMap googleMap) {
         this.googleMap = googleMap;
 
+        currentLocation.setLatitude(49.40019786621855);
+        currentLocation.setLongitude(2.800168926152195);
         googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default").snippet("Default"));
         CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
@@ -258,6 +273,81 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         poly.add(defaultDepart);
 
         googleMap.addPolyline(poly);
+
+    }
+
+
+    public class StepPositioningHandler {
+
+        private Location mCurrentLocation;
+        private static final int eRadius = 6371000; //rayon de la terre en m
+
+        /** Calcule la nouvelle position de l'utilisateur à partir de la courante
+         * @param stepSize la taille du pas qu'a fait l'utilisateur
+         * @param bearing l'angle de direction
+         * @return la nouvelle localisation
+         */
+        public Location computeNextStep(float stepSize,float bearing) {
+            Location newLoc = new Location(mCurrentLocation);
+            float angDistance = stepSize / eRadius;
+            double oldLat = mCurrentLocation.getLatitude();
+            double oldLng = mCurrentLocation.getLongitude();
+            double newLat = Math.asin( Math.sin(Math.toRadians(oldLat))*Math.cos(angDistance) +
+                    Math.cos(Math.toRadians(oldLat))*Math.sin(angDistance)*Math.cos(bearing) );
+            double newLon = Math.toRadians(oldLng) +
+                    Math.atan2(Math.sin(bearing)*Math.sin(angDistance)*Math.cos(Math.toRadians(oldLat)),
+                            Math.cos(angDistance) - Math.sin(Math.toRadians(oldLat))*Math.sin(newLat));
+            //reconversion en degres
+            newLoc.setLatitude(Math.toDegrees(newLat));
+            newLoc.setLongitude(Math.toDegrees(newLon));
+
+            newLoc.setBearing((mCurrentLocation.getBearing()+180)% 360);
+            mCurrentLocation = newLoc;
+
+            return newLoc;
+        }
+
+    }
+
+    public class DeviceAttitudeHandler {
+
+        SensorManager sm;
+        Sensor sensor;
+        private float[] mRotationMatrixFromVector = new float[9];
+        private float[] mRotationMatrix = new float[9];
+        public float[] orientationVals = new float[3];
+        private final int sensorType = Sensor.TYPE_ROTATION_VECTOR;
+
+        public DeviceAttitudeHandler(SensorManager sm) {
+            super();
+            this.sm = sm;
+            sensor = sm.getDefaultSensor(sensorType);
+        }
+
+        public void start() {
+            sm.registerListener((SensorEventListener) this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+
+        public void stop() {
+            sm.unregisterListener((SensorEventListener) this);
+        }
+
+        public void onAccuracyChanged(Sensor arg0, int arg1) {
+        }
+
+        public void onSensorChanged(SensorEvent event) {
+            // Convert the rotation-vector to a 4x4 matrix.
+            SensorManager.getRotationMatrixFromVector(mRotationMatrixFromVector,
+                    event.values);
+            SensorManager.remapCoordinateSystem(mRotationMatrixFromVector,
+                    SensorManager.AXIS_X, SensorManager.AXIS_Z, mRotationMatrix);
+            SensorManager.getOrientation(mRotationMatrix, orientationVals);
+
+            orientationVals[0] = (float) orientationVals[0];
+            orientationVals[1] = (float) orientationVals[1]; // axe de rotation
+            orientationVals[2] = (float) orientationVals[2];
+
+        }
 
     }
 

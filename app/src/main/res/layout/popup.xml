@@ -5,8 +5,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="2dp"
-    android:background="#ab2fc4"
+    android:background="#424242"
     >
+
     <ImageButton
         android:id="@+id/ib_close"
         android:layout_width="wrap_content"
@@ -19,7 +20,8 @@
         android:id="@+id/tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Veuillez appuyer sur 'Start' une fois positionné à l'endroit désigné par l'administrateur"
+        android:gravity="center"
+        android:text="Veuillez appuyer sur 'Start' une fois positionné à l'endroit désigné par le marqueur"
         android:layout_centerInParent="true"
         android:padding="25sp"
         android:textColor="@color/white"

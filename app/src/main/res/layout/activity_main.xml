@@ -42,11 +42,24 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
+    <TextView
+        android:id="@+id/textTest"
+        android:layout_width="113dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="92dp"
+        android:layout_marginEnd="140dp"
+        android:text="0"
+        android:textAlignment="center"
+        android:textSize="34sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
+
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonStart"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginTop="96dp"
+        android:layout_marginTop="140dp"
         android:backgroundTint="@color/button_start_background_color"
         android:text="@string/start"
         app:layout_constraintEnd_toEndOf="parent"
@@ -57,9 +70,10 @@
         android:id="@+id/buttonReset"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginTop="180dp"
+        android:layout_marginTop="216dp"
         android:text="@string/reset"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
@@ -67,7 +81,7 @@
         android:id="@+id/buttonRemind"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginTop="264dp"
+        android:layout_marginTop="316dp"
         android:text="@string/remind"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button buttonRemind;
 
     TextView textNumberStep;
+    TextView textTest;
 
     SensorManager sensorManager;
     Sensor sensor;
@@ -93,6 +94,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonRemind = findViewById(R.id.buttonRemind);
 
         textNumberStep = findViewById(R.id.textNumberStep);
+        textTest = findViewById(R.id.textTest);
+
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.mapFragment);
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -215,22 +218,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             float y_acceleration = event.values[1];
             float z_acceleration = event.values[2];
 
-            double magnitude = Math.sqrt(Math.sqrt(x_acceleration) + Math.sqrt(y_acceleration) + Math.sqrt(z_acceleration));
-            double magnitudeDelta = magnitude - magnitudePrevious;
-            magnitudePrevious = magnitude;
+            textTest.setText(String.format("%s : %s : %s", x_acceleration, y_acceleration, z_acceleration));
+//            double magnitude = Math.sqrt(Math.sqrt(x_acceleration) + Math.sqrt(y_acceleration) + Math.sqrt(z_acceleration));
+//            double magnitudeDelta = magnitude - magnitudePrevious;
+//            magnitudePrevious = magnitude;
 
-            if (magnitudeDelta > DELTA) {
-                stepCount++;
-                textNumberStep.setText(String.valueOf(stepCount));
+//            if (magnitudeDelta > DELTA) {
+//                stepCount++;
+//                textNumberStep.setText(String.valueOf(stepCount));
+//
+//                // Get new location and add the line on the map
+//                Location newLocation = sph.computeNextStep(stepSize, dah.orientationVals[0]);
+//                LatLng latlng = new LatLng (newLocation.getLongitude(),newLocation.getLatitude());
+//                CameraPosition cameraPosition = new CameraPosition.Builder().target(latlng).zoom(20).build();
+//                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+//                drawPolyline(newLocation);
+//
+//            }
 
-                // Get new location and add the line on the map
-                Location newLocation = sph.computeNextStep(stepSize, dah.orientationVals[0]);
-                LatLng latlng = new LatLng (newLocation.getLongitude(),newLocation.getLatitude());
-                CameraPosition cameraPosition = new CameraPosition.Builder().target(latlng).zoom(20).build();
-                googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-                drawPolyline(newLocation);
-
-            }
         }
     }
 
@@ -279,29 +284,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public class StepPositioningHandler {
 
-        private Location mCurrentLocation;
         private static final int eRadius = 6371000; //rayon de la terre en m
+        private Location mCurrentLocation;
 
-        /** Calcule la nouvelle position de l'utilisateur à partir de la courante
+        /**
+         * Calcule la nouvelle position de l'utilisateur à partir de la courante
+         *
          * @param stepSize la taille du pas qu'a fait l'utilisateur
-         * @param bearing l'angle de direction
+         * @param bearing  l'angle de direction
          * @return la nouvelle localisation
          */
-        public Location computeNextStep(float stepSize,float bearing) {
+        public Location computeNextStep(float stepSize, float bearing) {
             Location newLoc = new Location(mCurrentLocation);
             float angDistance = stepSize / eRadius;
             double oldLat = mCurrentLocation.getLatitude();
             double oldLng = mCurrentLocation.getLongitude();
-            double newLat = Math.asin( Math.sin(Math.toRadians(oldLat))*Math.cos(angDistance) +
-                    Math.cos(Math.toRadians(oldLat))*Math.sin(angDistance)*Math.cos(bearing) );
+            double newLat = Math.asin(Math.sin(Math.toRadians(oldLat)) * Math.cos(angDistance) +
+                    Math.cos(Math.toRadians(oldLat)) * Math.sin(angDistance) * Math.cos(bearing));
             double newLon = Math.toRadians(oldLng) +
-                    Math.atan2(Math.sin(bearing)*Math.sin(angDistance)*Math.cos(Math.toRadians(oldLat)),
-                            Math.cos(angDistance) - Math.sin(Math.toRadians(oldLat))*Math.sin(newLat));
+                    Math.atan2(Math.sin(bearing) * Math.sin(angDistance) * Math.cos(Math.toRadians(oldLat)),
+                            Math.cos(angDistance) - Math.sin(Math.toRadians(oldLat)) * Math.sin(newLat));
             //reconversion en degres
             newLoc.setLatitude(Math.toDegrees(newLat));
             newLoc.setLongitude(Math.toDegrees(newLon));
 
-            newLoc.setBearing((mCurrentLocation.getBearing()+180)% 360);
+            newLoc.setBearing((mCurrentLocation.getBearing() + 180) % 360);
             mCurrentLocation = newLoc;
 
             return newLoc;
@@ -311,12 +318,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     public class DeviceAttitudeHandler {
 
+        private final int sensorType = Sensor.TYPE_ROTATION_VECTOR;
+        public float[] orientationVals = new float[3];
         SensorManager sm;
         Sensor sensor;
         private float[] mRotationMatrixFromVector = new float[9];
         private float[] mRotationMatrix = new float[9];
-        public float[] orientationVals = new float[3];
-        private final int sensorType = Sensor.TYPE_ROTATION_VECTOR;
 
         public DeviceAttitudeHandler(SensorManager sm) {
             super();

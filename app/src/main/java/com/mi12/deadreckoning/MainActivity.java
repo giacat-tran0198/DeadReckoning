@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     double magnitudePrevious = 0;
     int stepCount = 0;
     float stepSize = 0.9f;
+//    float sizeTo
     float[] orientationVals = new float[3];
     float[] mRotationMatrix = new float[9];
     //    boolean isPermissionLocationGranted;
@@ -115,8 +116,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         currentLocation.setLatitude(defaultDepart.latitude);
         currentLocation.setLongitude(defaultDepart.longitude);
+//        if (line != null){
+//            line.remove();
+//        }
+        if (googleMap != null){
+            CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
+            googleMap.clear();
+            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default").snippet("Default"));
 
-        line.remove();
+        }
     }
 
     private void drawPolyline() {
@@ -140,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             stepCount = 0;
             magnitudePrevious = 0;
-            textNumberStep.setText(stepCount);
+            textNumberStep.setText(String.valueOf(stepCount));
 
             initListStep();
 

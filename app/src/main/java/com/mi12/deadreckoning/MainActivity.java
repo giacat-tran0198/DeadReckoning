@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     double magnitudePrevious = 0;
     int stepCount = 0;
-    float stepSize = 0.8f;
+    float stepSize = 0.9f;
     float[] orientationVals = new float[3];
     float[] mRotationMatrix = new float[9];
 
@@ -66,6 +66,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     GoogleMap googleMap;
 //    PolylineOptions poly = new PolylineOptions();
     LatLng defaultDepart = new LatLng(49.40019786621855, 2.800168926152195);
+    // Test BF
+//    LatLng defaultDepart = new LatLng(49.415495420197736, 2.819529127135657);
     Location currentLocation = new Location("Current Location");
 
     Context mContext;
@@ -119,6 +121,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         listStep.add(defaultDepart);
         currentLocation.setLatitude(49.40019786621855);
         currentLocation.setLongitude(2.800168926152195);
+        // Test BF:
+//        currentLocation.setLatitude(49.41550516066548);
+//        currentLocation.setLongitude(2.819539108624675);
     }
 
 
@@ -201,6 +206,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR && buttonStart.isSelected()) {
             stepCount++;
             textNumberStep.setText(String.valueOf(stepCount));
+
+            //Tentative de correction Fab
+            orientationVals[0] = (float) (orientationVals[0] - Math.toRadians(8));
 
             Location newLocation = sph.computeNextStep(stepSize, orientationVals[0]);
             LatLng latlng = new LatLng (newLocation.getLatitude(),newLocation.getLongitude());
@@ -325,7 +333,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             newLoc.setLatitude(Math.toDegrees(newLat));
             newLoc.setLongitude(Math.toDegrees(newLon));
 
+
             newLoc.setBearing((currentLocation.getBearing() + 180) % 360);
+
             currentLocation = newLoc;
 
             return newLoc;

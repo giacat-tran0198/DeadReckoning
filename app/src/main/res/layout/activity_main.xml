@@ -58,48 +58,51 @@
 
     <EditText
         android:id="@+id/sizeField"
-        android:inputType="number"
-        android:hint="Height in cm"
-        android:layout_width="150dp"
-        android:layout_height="45dp"
+        android:layout_width="153dp"
+        android:layout_height="54dp"
         android:layout_marginTop="84dp"
+        android:layout_marginBottom="11dp"
+        android:hint="Height in cm"
+        android:inputType="number"
         android:textAlignment="center"
         android:textSize="24sp"
+        app:layout_constraintBottom_toTopOf="@+id/buttonStart"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
+        app:layout_constraintTop_toBottomOf="@+id/mapFragment"
+        app:layout_constraintVertical_bias="0.466" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonStart"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginTop="140dp"
+        android:layout_marginBottom="34dp"
         android:backgroundTint="@color/button_start_background_color"
         android:text="@string/start"
+        app:layout_constraintBottom_toTopOf="@+id/buttonReset"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonReset"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginTop="216dp"
+        android:layout_marginBottom="36dp"
         android:text="@string/reset"
+        app:layout_constraintBottom_toTopOf="@+id/buttonRemind"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.494"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonRemind"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginTop="316dp"
+        android:layout_marginBottom="36dp"
         android:text="@string/remind"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -19,6 +19,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -41,19 +42,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int PHYISCAL_ACTIVITY = 0;
     private static final int eRadius = 6371000; //rayon de la terre en m
+    private static final int DELTA = 5;
+
     Button buttonStart;
     Button buttonReset;
     Button buttonRemind;
     TextView textNumberStep;
     EditText sizeStep;
     SensorManager sensorManager;
+
     double magnitudePrevious = 0;
     int stepCount = 0;
     float stepSize = 0.9f;
     float[] orientationVals = new float[3];
     float[] mRotationMatrixFromVector = new float[16];
     float[] mRotationMatrix = new float[16];
-    //    boolean isPermissionLocationGranted;
+
     SupportMapFragment mapFragment;
     GoogleMap googleMap;
     LatLng defaultDepart = new LatLng(49.40019786621855, 2.800168926152195); //Hall PG
@@ -65,8 +69,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     List<LatLng> listStep;
     Polyline line;
 
-    private Sensor SDSensor;
-    private Sensor RotSensor;
+    Sensor SDSensor;
+    Sensor RotSensor;
+    Sensor AccSensor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +104,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         SDSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
         RotSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        AccSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         // Register the sensors for event callback
         registerSensors();
@@ -120,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         currentLocation.setLatitude(defaultDepart.latitude);
         currentLocation.setLongitude(defaultDepart.longitude);
 
-        if (googleMap != null){
+        if (googleMap != null) {
             CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
             googleMap.clear();
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
@@ -195,8 +201,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-
-        if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR && buttonStart.isSelected()) {
+        if (!buttonStart.isSelected()) return;
+        if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
             SensorManager.getRotationMatrixFromVector(mRotationMatrixFromVector, event.values);
             SensorManager.remapCoordinateSystem(mRotationMatrixFromVector, SensorManager.AXIS_X, SensorManager.AXIS_Z, mRotationMatrix);
             SensorManager.getOrientation(mRotationMatrix, orientationVals);
@@ -206,24 +212,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             orientationVals[2] = (float) orientationVals[2];
         }
 
-        if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR && buttonStart.isSelected()) {
+        if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
             stepCount++;
             textNumberStep.setText(String.valueOf(stepCount));
 
-            //Tentative de correction Fab
-//            orientationVals[0] = (float) (orientationVals[0] - Math.toRadians(8));
+            calNextPos();
+        } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            float x_acceleration = event.values[0];
+            float y_acceleration = event.values[1];
+            float z_acceleration = event.values[2];
+            double magnitude = Math.sqrt(x_acceleration*x_acceleration + y_acceleration*y_acceleration + z_acceleration*z_acceleration);
+            double magnitudeDelta = magnitude - magnitudePrevious;
+            magnitudePrevious = magnitude;
 
-            String height = sizeStep.getText().toString();
-            if (height.length()>0) {
-                float finalHeight = Float.parseFloat(height);
-                stepSize = finalHeight / 215;
+            if (magnitudeDelta > DELTA) {
+                stepCount++;
+                textNumberStep.setText(String.valueOf(stepCount));
+
+                calNextPos();
             }
-            Location newLocation = computeNextStep(stepSize, orientationVals[0]);
-            LatLng latlng = new LatLng(newLocation.getLatitude(), newLocation.getLongitude());
-            listStep.add(latlng);
-            CameraPosition cameraPosition = new CameraPosition.Builder().target(latlng).zoom(20).build();
-            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            drawPolyline();
         }
 
     }
@@ -260,6 +267,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.googleMap = googleMap;
     }
 
+    private void calNextPos() {
+        //Tentative de correction Fab
+        orientationVals[0] = (float) (orientationVals[0] - Math.toRadians(8));
+
+        String height = sizeStep.getText().toString();
+        if (height.length() > 0) {
+            float finalHeight = Float.parseFloat(height);
+            stepSize = finalHeight / 215;
+        }
+        Location newLocation = computeNextStep(stepSize, orientationVals[0]);
+        LatLng latlng = new LatLng(newLocation.getLatitude(), newLocation.getLongitude());
+        listStep.add(latlng);
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(latlng).zoom(20).build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        drawPolyline();
+    }
+
     // Simple function that registers all of the required sensor listeners
     // with the sensor manager.
     private void registerSensors() {
@@ -267,6 +291,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // the SensorManager when sensor values have changed.
         sensorManager.registerListener(this, RotSensor, SensorManager.SENSOR_DELAY_NORMAL);
         sensorManager.registerListener(this, SDSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, AccSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     // Simple function that un-registers all of the required sensor listeners
@@ -275,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Perform un-registration of the sensor listeners
         sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR));
         sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR));
+        sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
     }
 
     /**

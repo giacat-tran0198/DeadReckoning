@@ -44,15 +44,30 @@
 
     <TextView
         android:id="@+id/textTest"
+        android:visibility = "gone"
         android:layout_width="113dp"
         android:layout_height="45dp"
         android:layout_marginTop="92dp"
-        android:layout_marginEnd="140dp"
+        android:layout_marginEnd="16dp"
         android:text="0"
         android:textAlignment="center"
         android:textSize="34sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
+
+    <EditText
+        android:id="@+id/sizeField"
+        android:inputType="number"
+        android:hint="Height in cm"
+        android:layout_width="150dp"
+        android:layout_height="45dp"
+        android:layout_marginTop="84dp"
+        android:textAlignment="center"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
     <androidx.appcompat.widget.AppCompatButton

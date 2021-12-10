@@ -15,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.TextView;
@@ -39,23 +40,23 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener, OnMapReadyCallback {
 
     private static final int PHYISCAL_ACTIVITY = 0;
-    //    final double DELTA = 3;
     private static final int eRadius = 6371000; //rayon de la terre en m
     Button buttonStart;
     Button buttonReset;
     Button buttonRemind;
     TextView textNumberStep;
+    EditText sizeStep;
     SensorManager sensorManager;
     double magnitudePrevious = 0;
     int stepCount = 0;
     float stepSize = 0.9f;
-//    float sizeTo
     float[] orientationVals = new float[3];
-    float[] mRotationMatrix = new float[9];
+    float[] mRotationMatrixFromVector = new float[16];
+    float[] mRotationMatrix = new float[16];
     //    boolean isPermissionLocationGranted;
     SupportMapFragment mapFragment;
     GoogleMap googleMap;
-    LatLng defaultDepart = new LatLng(49.40019786621855, 2.800168926152195);
+    LatLng defaultDepart = new LatLng(49.40019786621855, 2.800168926152195); //Hall PG
     // Test BF
 //    LatLng defaultDepart = new LatLng(49.415495420197736, 2.819529127135657);
     Location currentLocation = new Location("Current Location");
@@ -84,6 +85,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonStart = findViewById(R.id.buttonStart);
         buttonReset = findViewById(R.id.buttonReset);
         buttonRemind = findViewById(R.id.buttonRemind);
+
+        sizeStep = (EditText) findViewById(R.id.sizeField);
 
         textNumberStep = findViewById(R.id.textNumberStep);
 
@@ -116,9 +119,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         currentLocation.setLatitude(defaultDepart.latitude);
         currentLocation.setLongitude(defaultDepart.longitude);
-//        if (line != null){
-//            line.remove();
-//        }
+
         if (googleMap != null){
             CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
             googleMap.clear();
@@ -143,6 +144,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.buttonStart) {
             buttonStart.setSelected(!buttonStart.isSelected());
             onChangeTextButtonStart();
+            sizeStep.setFocusableInTouchMode(false);
+            sizeStep.setFocusable(false);
+            if (!buttonStart.isSelected()) {
+                sizeStep.setFocusableInTouchMode(true);
+                sizeStep.setFocusable(true);
+            }
         } else if (id == R.id.buttonReset) {
             buttonStart.setSelected(false);
             onChangeTextButtonStart();
@@ -150,6 +157,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             stepCount = 0;
             magnitudePrevious = 0;
             textNumberStep.setText(String.valueOf(stepCount));
+            sizeStep.getText().clear();
+            sizeStep.setFocusableInTouchMode(true);
+            sizeStep.setFocusable(true);
 
             initListStep();
 
@@ -187,9 +197,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onSensorChanged(SensorEvent event) {
 
         if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR && buttonStart.isSelected()) {
-            SensorManager.getRotationMatrixFromVector(mRotationMatrix, event.values);
-            SensorManager.remapCoordinateSystem(mRotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, mRotationMatrix);
+            SensorManager.getRotationMatrixFromVector(mRotationMatrixFromVector, event.values);
+            SensorManager.remapCoordinateSystem(mRotationMatrixFromVector, SensorManager.AXIS_X, SensorManager.AXIS_Z, mRotationMatrix);
             SensorManager.getOrientation(mRotationMatrix, orientationVals);
+
+            orientationVals[0] = (float) orientationVals[0];
+            orientationVals[1] = (float) orientationVals[1];
+            orientationVals[2] = (float) orientationVals[2];
         }
 
         if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR && buttonStart.isSelected()) {
@@ -197,8 +211,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             textNumberStep.setText(String.valueOf(stepCount));
 
             //Tentative de correction Fab
-            orientationVals[0] = (float) (orientationVals[0] - Math.toRadians(8));
+//            orientationVals[0] = (float) (orientationVals[0] - Math.toRadians(8));
 
+            String height = sizeStep.getText().toString();
+            if (height.length()>0) {
+                float finalHeight = Float.parseFloat(height);
+                stepSize = finalHeight / 215;
+            }
             Location newLocation = computeNextStep(stepSize, orientationVals[0]);
             LatLng latlng = new LatLng(newLocation.getLatitude(), newLocation.getLongitude());
             listStep.add(latlng);
@@ -232,10 +251,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        this.googleMap = googleMap;
+
         googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default").snippet("Default"));
         CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        googleMap.getUiSettings().setCompassEnabled(true);
+
+        this.googleMap = googleMap;
     }
 
     // Simple function that registers all of the required sensor listeners

@@ -7,8 +7,8 @@
     tools:context=".MainActivity">
 
     <fragment
-        class="com.google.android.gms.maps.SupportMapFragment"
         android:id="@+id/mapFragment"
+        class="com.google.android.gms.maps.SupportMapFragment"
         android:layout_width="match_parent"
         android:layout_height="285dp"
         android:layout_marginTop="4dp"
@@ -62,33 +62,35 @@
         android:layout_height="54dp"
         android:layout_marginTop="84dp"
         android:layout_marginBottom="11dp"
-        android:hint="Height in cm"
+        android:hint="@string/height"
         android:inputType="number"
         android:textAlignment="center"
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/buttonStart"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.174"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapFragment"
-        app:layout_constraintVertical_bias="0.466" />
+        app:layout_constraintVertical_bias="0.317" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonStart"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginBottom="34dp"
+        android:layout_marginBottom="24dp"
         android:backgroundTint="@color/button_start_background_color"
         android:text="@string/start"
         app:layout_constraintBottom_toTopOf="@+id/buttonReset"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonReset"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginBottom="36dp"
+        android:layout_marginBottom="24dp"
         android:text="@string/reset"
         app:layout_constraintBottom_toTopOf="@+id/buttonRemind"
         app:layout_constraintEnd_toEndOf="parent"
@@ -98,11 +100,25 @@
         android:id="@+id/buttonRemind"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginBottom="36dp"
+        android:layout_marginBottom="24dp"
         android:text="@string/remind"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.494"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <Switch
+        android:id="@+id/switchStepSensor"
+        android:layout_width="146dp"
+        android:layout_height="49dp"
+        android:layout_marginTop="100dp"
+        android:checked="false"
+        android:text="@string/stepSensor"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.837"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/mapFragment"
+        tools:ignore="MissingConstraints,UseSwitchCompatOrMaterialXml" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

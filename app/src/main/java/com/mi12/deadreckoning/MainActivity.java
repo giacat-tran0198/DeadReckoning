@@ -15,10 +15,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
+import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -38,7 +41,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener, OnMapReadyCallback {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, SensorEventListener, OnMapReadyCallback, CompoundButton.OnCheckedChangeListener {
 
     private static final int PHYISCAL_ACTIVITY = 0;
     private static final int eRadius = 6371000; //rayon de la terre en m
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView textNumberStep;
     EditText sizeStep;
     SensorManager sensorManager;
+    Switch switchStepSensor;
 
     double magnitudePrevious = 0;
     int stepCount = 0;
@@ -57,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     float[] orientationVals = new float[3];
     float[] mRotationMatrixFromVector = new float[16];
     float[] mRotationMatrix = new float[16];
+    boolean switchStepAvailable;
 
     SupportMapFragment mapFragment;
     GoogleMap googleMap;
@@ -113,6 +118,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mContext = getApplicationContext();
 
         initListStep();
+
+        // Select switch step sensor
+        switchStepSensor = findViewById(R.id.switchStepSensor);
+        switchStepSensor.setOnCheckedChangeListener(this);
     }
 
     private void onChangeTextButtonStart() {
@@ -199,6 +208,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (isChecked){
+            if (SDSensor != null){
+                switchStepAvailable = true;
+                Toast.makeText(this, "Turn on step sensor", Toast.LENGTH_SHORT).show();
+            }else{
+                switchStepSensor.setChecked(false);
+                Toast.makeText(this, "Step sensor unavailable", Toast.LENGTH_SHORT).show();
+            }
+        }else{
+            switchStepAvailable = false;
+        }
+    }
+
+    @Override
     public void onSensorChanged(SensorEvent event) {
         if (!buttonStart.isSelected()) return;
         if (event.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
@@ -211,12 +235,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             orientationVals[2] = (float) orientationVals[2];
         }
 
-        if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
+        if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR && switchStepAvailable) {
             stepCount++;
             textNumberStep.setText(String.valueOf(stepCount));
 
             calNextPos();
-        } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+        } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && !switchStepAvailable) {
             float x_acceleration = event.values[0];
             float y_acceleration = event.values[1];
             float z_acceleration = event.values[2];

@@ -19,7 +19,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,10 +28,11 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Context mContext;
     PopupWindow mPopupWindow;
     List<LatLng> listStep;
-    Polyline line;
+    Marker currentMarker;
 
     Sensor SDSensor;
     Sensor RotSensor;
@@ -91,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonReset = findViewById(R.id.buttonReset);
         buttonRemind = findViewById(R.id.buttonRemind);
 
-        sizeStep = (EditText) findViewById(R.id.sizeField);
+        sizeStep = findViewById(R.id.sizeField);
 
         textNumberStep = findViewById(R.id.textNumberStep);
 
@@ -130,8 +130,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
             googleMap.clear();
             googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default").snippet("Default"));
-
+            googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default"));
         }
     }
 
@@ -141,7 +140,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .color(Color.BLUE)
                 .geodesic(true)
                 .addAll(listStep);
-        line = googleMap.addPolyline(poly);
+        googleMap.addPolyline(poly);
     }
 
     @Override
@@ -221,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             float x_acceleration = event.values[0];
             float y_acceleration = event.values[1];
             float z_acceleration = event.values[2];
-            double magnitude = Math.sqrt(x_acceleration*x_acceleration + y_acceleration*y_acceleration + z_acceleration*z_acceleration);
+            double magnitude = Math.sqrt(x_acceleration * x_acceleration + y_acceleration * y_acceleration + z_acceleration * z_acceleration);
             double magnitudeDelta = magnitude - magnitudePrevious;
             magnitudePrevious = magnitude;
 
@@ -259,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
 
-        googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default").snippet("Default"));
+        googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default"));
         CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
         googleMap.getUiSettings().setCompassEnabled(true);
@@ -281,6 +280,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         listStep.add(latlng);
         CameraPosition cameraPosition = new CameraPosition.Builder().target(latlng).zoom(20).build();
         googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+        if (currentMarker != null) currentMarker.remove();
+        currentMarker = googleMap.addMarker(new MarkerOptions().position(latlng).title("Current").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+
         drawPolyline();
     }
 

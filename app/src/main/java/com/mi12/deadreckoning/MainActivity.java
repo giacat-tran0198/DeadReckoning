@@ -51,8 +51,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Button buttonReset;
     Button buttonRemind;
     TextView textNumberStep;
-    EditText sizeStep;
-    SensorManager sensorManager;
+    EditText editTextSizeStep;
     Switch switchStepSensor;
 
     double magnitudePrevious = 0;
@@ -74,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     List<LatLng> listStep;
     Marker currentMarker;
 
+    SensorManager sensorManager;
     Sensor SDSensor;
     Sensor RotSensor;
     Sensor AccSensor;
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         buttonReset = findViewById(R.id.buttonReset);
         buttonRemind = findViewById(R.id.buttonRemind);
 
-        sizeStep = findViewById(R.id.sizeField);
+        editTextSizeStep = findViewById(R.id.sizeField);
 
         textNumberStep = findViewById(R.id.textNumberStep);
 
@@ -111,9 +111,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         RotSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         AccSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        // Register the sensors for event callback
-        registerSensors();
-
         // Get the application context
         mContext = getApplicationContext();
 
@@ -121,7 +118,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Select switch step sensor
         switchStepSensor = findViewById(R.id.switchStepSensor);
-        switchStepSensor.setOnCheckedChangeListener(this);
     }
 
     private void onChangeTextButtonStart() {
@@ -136,10 +132,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         currentLocation.setLongitude(defaultDepart.longitude);
 
         if (googleMap != null) {
-            CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
             googleMap.clear();
-            googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
             googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default"));
+            setCameraFollowedPosition(defaultDepart);
         }
     }
 
@@ -158,12 +153,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (id == R.id.buttonStart) {
             buttonStart.setSelected(!buttonStart.isSelected());
             onChangeTextButtonStart();
-            sizeStep.setFocusableInTouchMode(false);
-            sizeStep.setFocusable(false);
+            editTextSizeStep.setFocusableInTouchMode(false);
+            editTextSizeStep.setFocusable(false);
             if (!buttonStart.isSelected()) {
-                sizeStep.setFocusableInTouchMode(true);
-                sizeStep.setFocusable(true);
+                editTextSizeStep.setFocusableInTouchMode(true);
+                editTextSizeStep.setFocusable(true);
             }
+
+            String height = editTextSizeStep.getText().toString();
+            if (height.length() > 0) {
+                float finalHeight = Float.parseFloat(height);
+                stepSize = finalHeight / 215;
+            }
+
         } else if (id == R.id.buttonReset) {
             buttonStart.setSelected(false);
             onChangeTextButtonStart();
@@ -171,9 +173,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             stepCount = 0;
             magnitudePrevious = 0;
             textNumberStep.setText(String.valueOf(stepCount));
-            sizeStep.getText().clear();
-            sizeStep.setFocusableInTouchMode(true);
-            sizeStep.setFocusable(true);
+            editTextSizeStep.getText().clear();
+            editTextSizeStep.setFocusableInTouchMode(true);
+            editTextSizeStep.setFocusable(true);
 
             initListStep();
 
@@ -209,15 +211,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (isChecked){
-            if (SDSensor != null){
+        if (isChecked) {
+            if (SDSensor != null) {
                 switchStepAvailable = true;
                 Toast.makeText(this, "Turn on step sensor", Toast.LENGTH_SHORT).show();
-            }else{
+            } else {
                 switchStepSensor.setChecked(false);
                 Toast.makeText(this, "Step sensor unavailable", Toast.LENGTH_SHORT).show();
             }
-        }else{
+        } else {
             switchStepAvailable = false;
         }
     }
@@ -236,9 +238,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR && switchStepAvailable) {
-            stepCount++;
-            textNumberStep.setText(String.valueOf(stepCount));
-
             calNextPos();
         } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && !switchStepAvailable) {
             float x_acceleration = event.values[0];
@@ -249,9 +248,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             magnitudePrevious = magnitude;
 
             if (magnitudeDelta > DELTA) {
-                stepCount++;
-                textNumberStep.setText(String.valueOf(stepCount));
-
                 calNextPos();
             }
         }
@@ -265,45 +261,58 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        registerSensors();
+
+        // Simple function that registers all of the required sensor listeners with the sensor manager.
+        // Register the listeners. Used for receiving notifications from
+        // the SensorManager when sensor values have changed.
+        sensorManager.registerListener(this, RotSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, SDSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this, AccSensor, SensorManager.SENSOR_DELAY_NORMAL);
+
 
         // Set event
         buttonStart.setOnClickListener(this);
         buttonReset.setOnClickListener(this);
         buttonRemind.setOnClickListener(this);
+
+        switchStepSensor.setOnCheckedChangeListener(this);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unRegisterSensors();
+
+        // Simple function that un-registers all of the required sensor listeners from the sensor manager.
+        // Perform un-registration of the sensor listeners
+        sensorManager.unregisterListener(this, RotSensor);
+        sensorManager.unregisterListener(this, SDSensor);
+        sensorManager.unregisterListener(this, AccSensor);
+
     }
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-
         googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default"));
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-        googleMap.getUiSettings().setCompassEnabled(true);
+//        googleMap.getUiSettings().setCompassEnabled(true);
+        setCameraFollowedPosition(defaultDepart);
+
 
         this.googleMap = googleMap;
     }
 
     private void calNextPos() {
+        // Metre nouveau pas
+        stepCount++;
+        textNumberStep.setText(String.valueOf(stepCount));
+
         //Tentative de correction Fab
         orientationVals[0] = (float) (orientationVals[0] - Math.toRadians(8));
 
-        String height = sizeStep.getText().toString();
-        if (height.length() > 0) {
-            float finalHeight = Float.parseFloat(height);
-            stepSize = finalHeight / 215;
-        }
-        Location newLocation = computeNextStep(stepSize, orientationVals[0]);
-        LatLng latlng = new LatLng(newLocation.getLatitude(), newLocation.getLongitude());
+        currentLocation = computeNextStep(stepSize, orientationVals[0], currentLocation);
+        LatLng latlng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         listStep.add(latlng);
-        CameraPosition cameraPosition = new CameraPosition.Builder().target(latlng).zoom(20).build();
-        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+        setCameraFollowedPosition(latlng);
 
         if (currentMarker != null) currentMarker.remove();
         currentMarker = googleMap.addMarker(new MarkerOptions().position(latlng).title("Current").icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
@@ -311,23 +320,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         drawPolyline();
     }
 
-    // Simple function that registers all of the required sensor listeners
-    // with the sensor manager.
-    private void registerSensors() {
-        // Register the listeners. Used for receiving notifications from
-        // the SensorManager when sensor values have changed.
-        sensorManager.registerListener(this, RotSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this, SDSensor, SensorManager.SENSOR_DELAY_NORMAL);
-        sensorManager.registerListener(this, AccSensor, SensorManager.SENSOR_DELAY_NORMAL);
-    }
-
-    // Simple function that un-registers all of the required sensor listeners
-    // from the sensor manager.
-    private void unRegisterSensors() {
-        // Perform un-registration of the sensor listeners
-        sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR));
-        sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR));
-        sensorManager.unregisterListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+    private void setCameraFollowedPosition(LatLng currLatLng){
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(currLatLng).zoom(20).build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
     }
 
     /**
@@ -335,9 +330,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
      *
      * @param stepSize la taille du pas qu'a fait l'utilisateur
      * @param bearing  l'angle de direction
+     * @param currentLocation la location currently
      * @return la nouvelle localisation
      */
-    public Location computeNextStep(float stepSize, float bearing) {
+    public Location computeNextStep(float stepSize, float bearing, Location currentLocation) {
         Location newLoc = new Location(currentLocation);
         float angDistance = stepSize / eRadius;
         double oldLat = currentLocation.getLatitude();
@@ -351,10 +347,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         newLoc.setLatitude(Math.toDegrees(newLat));
         newLoc.setLongitude(Math.toDegrees(newLon));
 
-
+        //metre a jour le pailer
         newLoc.setBearing((currentLocation.getBearing() + 180) % 360);
-
-        currentLocation = newLoc;
 
         return newLoc;
     }

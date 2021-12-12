@@ -68,11 +68,11 @@
         android:textSize="24sp"
         app:layout_constraintBottom_toTopOf="@+id/buttonStart"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.174"
+        app:layout_constraintHorizontal_bias="0.201"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapFragment"
-        app:layout_constraintVertical_bias="0.317" />
+        app:layout_constraintVertical_bias="0.39" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonStart"
@@ -109,15 +109,15 @@
 
     <Switch
         android:id="@+id/switchStepSensor"
-        android:layout_width="146dp"
-        android:layout_height="49dp"
+        android:layout_width="144dp"
+        android:layout_height="51dp"
         android:layout_marginTop="100dp"
+        android:layout_marginEnd="32dp"
         android:checked="false"
         android:text="@string/stepSensor"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.837"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/sizeField"
         app:layout_constraintTop_toBottomOf="@+id/mapFragment"
         tools:ignore="MissingConstraints,UseSwitchCompatOrMaterialXml" />
 

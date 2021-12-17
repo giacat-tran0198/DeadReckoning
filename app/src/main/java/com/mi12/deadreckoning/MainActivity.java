@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     double magnitudePrevious = 0;
     int stepCount = 0;
     float stepSize = 0.9f;
+    float correctionFab = 12.5f;
     float[] orientationVals = new float[3];
     float[] mRotationMatrixFromVector = new float[16];
     float[] mRotationMatrix = new float[16];
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         SDSensor = sensorManager.getDefaultSensor(Sensor.TYPE_STEP_DETECTOR);
         RotSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
         AccSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
 
         // Get the application context
         mContext = getApplicationContext();
@@ -258,6 +260,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
+
+
     @Override
     protected void onResume() {
         super.onResume();
@@ -292,21 +296,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onMapReady(@NonNull GoogleMap googleMap) {
-        googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default"));
-//        googleMap.getUiSettings().setCompassEnabled(true);
-        setCameraFollowedPosition(defaultDepart);
-
+        googleMap.addMarker(new MarkerOptions().position(defaultDepart).title("Default").snippet("Default"));
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(defaultDepart).zoom(20).build();
+        googleMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        googleMap.getUiSettings().setCompassEnabled(true);
 
         this.googleMap = googleMap;
     }
 
     private void calNextPos() {
-        // Metre nouveau pas
+        // Prise en compte du nouveau pas
         stepCount++;
         textNumberStep.setText(String.valueOf(stepCount));
 
         //Tentative de correction Fab
-        orientationVals[0] = (float) (orientationVals[0] - Math.toRadians(8));
+        orientationVals[0] = (float) (orientationVals[0] + Math.toRadians(correctionFab));
 
         currentLocation = computeNextStep(stepSize, orientationVals[0], currentLocation);
         LatLng latlng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());

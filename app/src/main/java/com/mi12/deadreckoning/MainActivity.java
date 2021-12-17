@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     double magnitudePrevious = 0;
     int stepCount = 0;
     float stepSize = 0.9f;
-    float correctionFab = 12.5f;
+    float correctionFab = 15.5f;
     float[] orientationVals = new float[3];
     float[] mRotationMatrixFromVector = new float[16];
     float[] mRotationMatrix = new float[16];
@@ -240,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR && switchStepAvailable) {
-            calNextPos();
+            calNextPos(event);
         } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && !switchStepAvailable) {
             float x_acceleration = event.values[0];
             float y_acceleration = event.values[1];
@@ -250,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             magnitudePrevious = magnitude;
 
             if (magnitudeDelta > DELTA) {
-                calNextPos();
+                calNextPos(event);
             }
         }
 
@@ -304,13 +304,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.googleMap = googleMap;
     }
 
-    private void calNextPos() {
+    private void calNextPos(SensorEvent event) {
         // Prise en compte du nouveau pas
         stepCount++;
         textNumberStep.setText(String.valueOf(stepCount));
 
         //Tentative de correction Fab
-        orientationVals[0] = (float) (orientationVals[0] + Math.toRadians(correctionFab));
+        if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR){
+            orientationVals[0] = (float) (orientationVals[0] + Math.toRadians(correctionFab));
+        }
 
         currentLocation = computeNextStep(stepSize, orientationVals[0], currentLocation);
         LatLng latlng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());

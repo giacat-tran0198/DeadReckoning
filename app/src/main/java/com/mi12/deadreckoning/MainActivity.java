@@ -49,15 +49,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     Button buttonStart;
     Button buttonReset;
-    Button buttonRemind;
     TextView textNumberStep;
     EditText editTextSizeStep;
+    EditText editTextAngle;
     Switch switchStepSensor;
 
     double magnitudePrevious = 0;
     int stepCount = 0;
     float stepSize = 0.9f;
-    float correctionFab = 15.5f;
+    float correctionFab = 17f;
     float[] orientationVals = new float[3];
     float[] mRotationMatrixFromVector = new float[16];
     float[] mRotationMatrix = new float[16];
@@ -95,9 +95,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Find item
         buttonStart = findViewById(R.id.buttonStart);
         buttonReset = findViewById(R.id.buttonReset);
-        buttonRemind = findViewById(R.id.buttonRemind);
 
         editTextSizeStep = findViewById(R.id.sizeField);
+        editTextAngle = findViewById(R.id.correctionAngle);
 
         textNumberStep = findViewById(R.id.textNumberStep);
 
@@ -157,15 +157,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             onChangeTextButtonStart();
             editTextSizeStep.setFocusableInTouchMode(false);
             editTextSizeStep.setFocusable(false);
+            editTextAngle.setFocusableInTouchMode(false);
+            editTextAngle.setFocusable(false);
             if (!buttonStart.isSelected()) {
                 editTextSizeStep.setFocusableInTouchMode(true);
                 editTextSizeStep.setFocusable(true);
+                editTextAngle.setFocusableInTouchMode(true);
+                editTextAngle.setFocusable(true);
             }
 
             String height = editTextSizeStep.getText().toString();
+            String angle = editTextAngle.getText().toString();
             if (height.length() > 0) {
                 float finalHeight = Float.parseFloat(height);
                 stepSize = finalHeight / 215;
+            }
+            if (angle.length() > 0) {
+                correctionFab = Float.parseFloat(angle);
             }
 
         } else if (id == R.id.buttonReset) {
@@ -179,35 +187,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             editTextSizeStep.setFocusableInTouchMode(true);
             editTextSizeStep.setFocusable(true);
 
+            editTextAngle.getText().clear();
+            editTextAngle.setFocusableInTouchMode(true);
+            editTextAngle.setFocusable(true);
+
             initListStep();
 
-        } else if (id == R.id.buttonRemind) {
-            // Initialize a new instance of LayoutInflater service
-            LayoutInflater inflater = (LayoutInflater) mContext.getSystemService(LAYOUT_INFLATER_SERVICE);
-
-            // Inflate the custom layout/view
-            View customView = inflater.inflate(R.layout.popup, null);
-
-            // Initialize a new instance of popup window
-            mPopupWindow = new PopupWindow(
-                    customView,
-                    WindowManager.LayoutParams.WRAP_CONTENT,
-                    WindowManager.LayoutParams.WRAP_CONTENT
-            );
-
-            // Set an elevation value for popup window
-            // Call requires API level 21
-            mPopupWindow.setElevation(5.0f);
-
-            // Get a reference for the custom view close button
-            ImageButton closeButton = customView.findViewById(R.id.ib_close);
-
-            // Set a click listener for the popup window close button
-            // Dismiss the popup window
-            closeButton.setOnClickListener(view -> mPopupWindow.dismiss());
-
-            // Finally, show the popup window at the center location of root relative layout
-            mPopupWindow.showAtLocation(v, Gravity.CENTER, 0, 0);
         }
     }
 
@@ -240,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
 
         if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR && switchStepAvailable) {
-            calNextPos(event);
+            calNextPos(orientationVals[0] + (float) Math.toRadians(correctionFab));
         } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER && !switchStepAvailable) {
             float x_acceleration = event.values[0];
             float y_acceleration = event.values[1];
@@ -250,7 +235,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             magnitudePrevious = magnitude;
 
             if (magnitudeDelta > DELTA) {
-                calNextPos(event);
+                calNextPos(orientationVals[0] - (float) Math.toRadians(5f));
             }
         }
 
@@ -277,7 +262,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // Set event
         buttonStart.setOnClickListener(this);
         buttonReset.setOnClickListener(this);
-        buttonRemind.setOnClickListener(this);
 
         switchStepSensor.setOnCheckedChangeListener(this);
     }
@@ -304,17 +288,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.googleMap = googleMap;
     }
 
-    private void calNextPos(SensorEvent event) {
+    private void calNextPos(float bering) {
         // Prise en compte du nouveau pas
         stepCount++;
         textNumberStep.setText(String.valueOf(stepCount));
 
-        //Tentative de correction Fab
-        if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR){
-            orientationVals[0] = (float) (orientationVals[0] + Math.toRadians(correctionFab));
-        }
+//        //Tentative de correction Fab
+//        if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR){
+//            orientationVals[0] = (float) (orientationVals[0] + Math.toRadians(correctionFab));
+//        }
 
-        currentLocation = computeNextStep(stepSize, orientationVals[0], currentLocation);
+        currentLocation = computeNextStep(stepSize, bering, currentLocation);
         LatLng latlng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         listStep.add(latlng);
 

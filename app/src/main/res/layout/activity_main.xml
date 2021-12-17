@@ -44,7 +44,6 @@
 
     <TextView
         android:id="@+id/textTest"
-        android:visibility = "gone"
         android:layout_width="113dp"
         android:layout_height="45dp"
         android:layout_marginTop="92dp"
@@ -52,51 +51,50 @@
         android:text="0"
         android:textAlignment="center"
         android:textSize="34sp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/mapFragment" />
 
     <EditText
         android:id="@+id/sizeField"
-        android:layout_width="264dp"
+        android:layout_width="150dp"
         android:layout_height="53dp"
-        android:layout_marginTop="84dp"
-        android:layout_marginBottom="11dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="1dp"
         android:hint="@string/height"
         android:inputType="number"
         android:textAlignment="center"
-        android:textSize="24sp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonStart"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/correctionAngle"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.457"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapFragment"
-        app:layout_constraintVertical_bias="0.421" />
+        app:layout_constraintTop_toBottomOf="@+id/switchStepSensor"
+        app:layout_constraintVertical_bias="0.984" />
 
     <EditText
         android:id="@+id/correctionAngle"
-        android:layout_width="257dp"
-        android:layout_height="46dp"
-        android:layout_marginTop="84dp"
+        android:layout_width="225dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="0dp"
         android:layout_marginBottom="11dp"
         android:hint="@string/angle"
         android:inputType="number"
         android:textAlignment="center"
-        android:textSize="24sp"
+        android:textSize="20sp"
         app:layout_constraintBottom_toTopOf="@+id/buttonStart"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.457"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapFragment"
+        app:layout_constraintTop_toBottomOf="@+id/sizeField"
         app:layout_constraintVertical_bias="0.939" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/buttonStart"
         android:layout_width="225dp"
         android:layout_height="60dp"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="15dp"
         android:backgroundTint="@color/button_start_background_color"
         android:text="@string/start"
         app:layout_constraintBottom_toTopOf="@+id/buttonReset"
@@ -108,23 +106,24 @@
         android:id="@+id/buttonReset"
         android:layout_width="225dp"
         android:layout_height="60dp"
+        android:layout_marginBottom="24dp"
         android:text="@string/reset"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="655dp" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Switch
         android:id="@+id/switchStepSensor"
         android:layout_width="144dp"
         android:layout_height="51dp"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="0dp"
         android:checked="false"
         android:text="@string/stepSensor"
         android:textSize="16sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.441"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/mapFragment"
+        app:layout_constraintTop_toBottomOf="@+id/textNumberStep"
         tools:ignore="MissingConstraints,UseSwitchCompatOrMaterialXml" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

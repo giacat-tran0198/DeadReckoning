@@ -4,8 +4,7 @@
     <string name="stop">STOP</string>
     <string name="reset">RESET</string>
     <string name="step">STEPS</string>
-    <string name="remind">REMIND INSTRUCTION</string>
-    <string name="height">Height in cm</string>
-    <string name="angle">Correction in angle</string>
+    <string name="height">Height (in cm)</string>
+    <string name="angle">Angle correction (in °)</string>
     <string name="stepSensor">Step Sensor</string>
 </resources>

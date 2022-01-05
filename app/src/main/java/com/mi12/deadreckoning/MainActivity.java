@@ -10,14 +10,11 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.PopupWindow;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -45,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int PHYISCAL_ACTIVITY = 0;
     private static final int eRadius = 6371000; //rayon de la terre en m
-    private static final int DELTA = 5;
+    private static int DELTA = 5;
 
     Button buttonStart;
     Button buttonReset;
@@ -53,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     EditText editTextSizeStep;
     EditText editTextAngle;
     Switch switchStepSensor;
+    com.google.android.material.slider.Slider editDELTA;
 
     double magnitudePrevious = 0;
     int stepCount = 0;
@@ -98,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         editTextSizeStep = findViewById(R.id.sizeField);
         editTextAngle = findViewById(R.id.correctionAngle);
+        editDELTA = findViewById(R.id.sliderDELTA);
 
         textNumberStep = findViewById(R.id.textNumberStep);
 
@@ -159,15 +158,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             editTextSizeStep.setFocusable(false);
             editTextAngle.setFocusableInTouchMode(false);
             editTextAngle.setFocusable(false);
+            editDELTA.setFocusableInTouchMode(false);
+            editDELTA.setFocusable(false);
             if (!buttonStart.isSelected()) {
                 editTextSizeStep.setFocusableInTouchMode(true);
                 editTextSizeStep.setFocusable(true);
                 editTextAngle.setFocusableInTouchMode(true);
                 editTextAngle.setFocusable(true);
+                editDELTA.setFocusableInTouchMode(true);
+                editDELTA.setFocusable(true);
             }
 
             String height = editTextSizeStep.getText().toString();
             String angle = editTextAngle.getText().toString();
+            DELTA = (int) editDELTA.getValue();
             if (height.length() > 0) {
                 float finalHeight = Float.parseFloat(height);
                 stepSize = finalHeight / 215;
@@ -191,6 +195,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             editTextAngle.setFocusableInTouchMode(true);
             editTextAngle.setFocusable(true);
 
+            editDELTA.setValue(5);
+            editDELTA.setFocusableInTouchMode(true);
+            editDELTA.setFocusable(true);
+
             initListStep();
 
         }
@@ -201,10 +209,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         if (isChecked) {
             if (SDSensor != null) {
                 switchStepAvailable = true;
-                Toast.makeText(this, "Turn on step sensor", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Step Detector turned on", Toast.LENGTH_SHORT).show();
             } else {
                 switchStepSensor.setChecked(false);
-                Toast.makeText(this, "Step sensor unavailable", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Step Detector unavailable", Toast.LENGTH_SHORT).show();
             }
         } else {
             switchStepAvailable = false;
@@ -288,17 +296,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         this.googleMap = googleMap;
     }
 
-    private void calNextPos(float bering) {
+    private void calNextPos(float bearing) {
         // Prise en compte du nouveau pas
         stepCount++;
         textNumberStep.setText(String.valueOf(stepCount));
 
-//        //Tentative de correction Fab
-//        if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR){
-//            orientationVals[0] = (float) (orientationVals[0] + Math.toRadians(correctionFab));
-//        }
-
-        currentLocation = computeNextStep(stepSize, bering, currentLocation);
+        currentLocation = computeNextStep(stepSize, bearing, currentLocation);
         LatLng latlng = new LatLng(currentLocation.getLatitude(), currentLocation.getLongitude());
         listStep.add(latlng);
 
@@ -337,7 +340,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         newLoc.setLatitude(Math.toDegrees(newLat));
         newLoc.setLongitude(Math.toDegrees(newLon));
 
-        //metre a jour le pailer
+        //mettre a jour l'angle
         newLoc.setBearing((currentLocation.getBearing() + 180) % 360);
 
         return newLoc;
